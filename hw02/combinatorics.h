@@ -8,6 +8,8 @@
  */
 uint64_t factorial(uint64_t val);
 
+uint64_t fact_tail(uint64_t val, uint64_t acc);
+
 /**
  * Return the number of ways to choose k items from n items
  * without repetition and with order.
