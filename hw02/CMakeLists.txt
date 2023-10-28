@@ -8,6 +8,9 @@ set(EXECUTABLE_NAME runhw02)
 
 add_library(hw02 combinatorics.cpp)
 
+# Include directories
+target_include_directories(hw02 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_executable(${EXECUTABLE_NAME} run.cpp)
 
 target_link_directories(${EXECUTABLE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

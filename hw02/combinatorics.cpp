@@ -13,6 +13,7 @@ uint64_t fact_tail(uint64_t val, uint64_t acc){
 
 uint64_t permutation(uint64_t val, uint64_t val2) {
     // TODO
+    if(val2 > val) return 0;
     return factorial(val)/factorial(val-val2);
 }
 
