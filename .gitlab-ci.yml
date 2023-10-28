@@ -1,18 +1,18 @@
 variables:
-    CURRENT_HW: "hw01"
-    CURRENT_TEST: "testhw01"
-    TEST_HASH_EXPECTED: "9cad009f0c2f8fefd69b880d172eed01e468b9a8c7c0fa59ad9c7209636f3a45"
+    CURRENT_HW: "hw02"
+    CURRENT_TEST: "testhw02"
+    TEST_HASH_EXPECTED: "060e1d731566c847b200d74dc68dd451aadf34b72dfc3ecc151621599457784b"
 
 
 
 # pre-verify test system hash
 before_script:
   - tester="python3 -c 'import base64, lzma; exec(lzma.decompress(base64.b64decode(\"/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4AREAg1dAAUbSxPKKmVtGhRPQtvDy44ev3OIPm3q08xy0m1+Vzts/YuDUpfq1D15P9KyY1ltIZb4nnvSxakQAJy1iSkSn0CSwxAcZ9BdnVKenS6RtGMtxaPfI4+FwrOfdwPZUVPktXnaYcFn4bVa3hvnOJxklrrhVHGvvZRTTt4Mu+x20tJgI/iZjgvs5bNDrDOzKuXdEKvEW4gp+6Pog7KU6lzFT7Bco1J73LsxZPv8wmxMVWJHkttShI8lLmJUY1qFo+oH1hvIV90Vm+kC+wYSXLAFlOgRWoxEDNiCGURWFRF64H3VEblJ3rU2fwiIIfQuuUThFY8VteaRJiqhfeuGI/xRCFxKBbqSYvBR6EQlU9Vwu4hgWWgaKsi/9PgdyGCF5+1jcUWk7sxhe9pV/PiSe1Sd2btU+lzwXSw5yJzSVJYLwrnQmJ3dXDnK+isUh9h2pdNpaRwAVeJV3rLSis3ieMU85luyXY4FLPePE3m743a4K35TWlpWLqDCPf0/+BKxfYs7N8E9K4astiojLb+KxvR1+9vz7JxKL4SHa7Vu5KUt1ud3Z2a0oVpJsu0l+rxpxB/s8Lw8HWDHa73U96wovpd32L2iz5S/kLxyOatBRRG8qwaTUSWX6Uaz9mx0sLLCX0BuM0fjrEWrGFrk7X2FAO3PoZCeoCD5UkN8+aDeTBzh3vWNLoawpMlRea7G1EMqBwAAAAAHDy7eLSsmdAABqQTFCAAAt31GR7HEZ/sCAAAAAARZWg==\")).decode())'"
-  - TEST_HASH=$(eval "$tester" . tests/)
+  - TEST_HASH=$(eval "$tester" . tests CMakeLists.txt)
 
   - echo $TEST_HASH
   - echo $TEST_HASH_EXPECTED
-  - if [[ "$TEST_HASH" == "$TEST_HASH_EXPECTED" ]]; then echo "hash ok for tests/"; else echo -n "contents of tests/ are not as expected! to fix this, git restore -s upstream/master tests/ .gitlab-ci.yml"; exit 1; fi
+  - if [[ "$TEST_HASH" == "$TEST_HASH_EXPECTED" ]]; then echo "hash ok for tests, CMakeLists.txt"; else echo -n "contents of tests, CMakeLists.txt are not as expected! to fix this, git restore -s upstream/master tests CMakeLists.txt .gitlab-ci.yml"; exit 1; fi
 
 stages:
 - compile
@@ -38,7 +38,10 @@ build-gcc:
   <<: *build_job_artifact
   image: cpp/compiler:2023
   script:
-    - CXX=g++ ./tests/hw01/compile
+    - mkdir -p build
+    - cd build
+    - cmake ..
+    - make $CURRENT_HW ${CURRENT_TEST} -j4 VERBOSE=1
   tags:
     - linux
 
@@ -46,7 +49,10 @@ build-clang:
   <<: *build_job_artifact
   image: cpp/compiler:2023
   script:
-    - CXX=clang++ CXXFLAGS="-stdlib=libc++ -Wl,-lc++abi" ./tests/hw01/compile
+    - mkdir -p build
+    - cd build
+    - cmake .. -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-lc++abi"
+    - make $CURRENT_HW ${CURRENT_TEST} -j4 VERBOSE=1
   tags:
     - linux
 
@@ -56,7 +62,8 @@ test-gcc:
   stage: test
   image: cpp/compiler:2023
   script:
-    - ./tests/hw01/test
+    - cd build
+    - ctest -R $CURRENT_HW -V -O ctest.log
   dependencies:
     - build-gcc
   artifacts:
@@ -72,7 +79,8 @@ test-clang:
   stage: test
   image: cpp/compiler:2023
   script:
-    - ./tests/hw01/test
+    - cd build
+    - ctest -R $CURRENT_HW -V -O ctest.log
   dependencies:
     - build-clang
   tags:
