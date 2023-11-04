@@ -76,7 +76,18 @@ bool remove(storage& contacts, std::string_view name){
  * Sort the contact list in-place by name.
  */
 void sort(storage& contacts){
+    std::vector<std::pair<std::string, number_t>> combinedData;
 
+    for (size_t i =0; i<size(contacts);++i){
+        combinedData.push_back(std::make_pair(contacts.names[i], contacts.numbers[i]));
+    }
+
+    std::sort(combinedData.begin(),combinedData.end());
+
+    for (size_t i =0; i<size(contacts);++i){
+        contacts.names[i] = combinedData[i].first;
+        contacts.numbers[i] = combinedData[i].second;
+    }
 }
 
 
