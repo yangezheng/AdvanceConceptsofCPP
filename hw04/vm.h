@@ -84,7 +84,7 @@ struct vm_state {
     /**
      * activate vm debugging.
      */
-    bool debug = false;
+    bool debug = true;
 
     // if you need to store more vm state, add it here!
 };

@@ -20,9 +20,37 @@ vm_state create_vm(bool debug) {
         std::cout << vmstate.stack.top() << std::endl;
         return true;
     });
-
-
     // TODO create instructions
+
+
+    // Load_const Operation
+    register_instruction(state, "LOAD_CONST", [](vm_state& vmstate, const item_t item /*arg*/) {
+        vmstate.stack.push(item);
+        return true;
+    });
+
+
+    // Add Operation
+    register_instruction(state, "ADD", [](vm_state& vmstate, const item_t /*arg*/) {
+        item_t x = vmstate.stack.top();
+        vmstate.stack.pop();
+        item_t y = vmstate.stack.top();
+        vmstate.stack.pop();
+
+        item_t sum  = x + y;
+        vmstate.stack.push(sum);
+        return true;
+    });
+
+    //Exit Operation
+    register_instruction(state, "EXIT", [](vm_state& vmstate, const item_t /*arg*/) {
+        item_t x = vmstate.stack.top();
+        vmstate.stack.pop();
+        return x;
+    });
+
+
+    // register_instruction(state, "LOAD CONST")
 
     return state;
 }
@@ -33,6 +61,10 @@ void register_instruction(vm_state& state, std::string_view name,
     size_t op_id = state.next_op_id;
 
     // TODO make instruction available to vm
+    state.instruction_ids[std::string(name)] = op_id;
+    state.instruction_names[op_id] = std::string(name);
+    state.instruction_actions[op_id] = action;
+    ++state.next_op_id;
 }
 
 
@@ -102,6 +134,7 @@ std::tuple<item_t, std::string> run(vm_state& vm, const code_t& code) {
         vm.pc += 1;
 
         // TODO execute instruction and stop if the action returns false.
+        
     }
 
     return {0, ""}; // TODO: return tuple(exit value, output text)

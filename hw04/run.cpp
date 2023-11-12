@@ -60,5 +60,6 @@ void test_vm() {
 
 int main() {
     vm::test_vm();
+
     return 0;
 }
