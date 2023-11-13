@@ -32,9 +32,11 @@ vm_state create_vm(bool debug) {
 
     // Add Operation
     register_instruction(state, "ADD", [](vm_state& vmstate, const item_t /*arg*/) {
-        item_t x = vmstate.stack.top();
+
+        item_t x = getTopStack(vmstate);
         vmstate.stack.pop();
-        item_t y = vmstate.stack.top();
+        
+        item_t y = getTopStack(vmstate);
         vmstate.stack.pop();
 
         item_t sum  = x + y;
@@ -44,15 +46,115 @@ vm_state create_vm(bool debug) {
 
     //Exit Operation
     register_instruction(state, "EXIT", [](vm_state& vmstate, const item_t /*arg*/) {
-        item_t x = vmstate.stack.top();
+        if (vmstate.stack.empty()){
+            throw vm_stackfail("Stack is empty, no TOS can be return!");
+        }
+        return false;
+    });
+
+    //POP
+    register_instruction(state, "POP", [](vm_state& vmstate, const item_t /*arg*/) {
+        if (vmstate.stack.empty()){
+            throw vm_stackfail("Stack is empty, no TOS can be return!");
+        }
+        
         vmstate.stack.pop();
-        return x;
+        return true;
+    });
+
+    register_instruction(state, "DIV", [](vm_state& vmstate, const item_t /*arg*/) {
+        item_t x = getTopStack(vmstate);
+        vmstate.stack.pop();
+        item_t y = getTopStack(vmstate);
+        vmstate.stack.pop();
+        if ( x == 0 ){
+            throw div_by_zero("Divisino by zero detected!"); 
+        }
+        item_t z = y / x;
+        vmstate.stack.push(z);
+        return true;
+    });
+
+    register_instruction(state, "EQ", [](vm_state& vmstate, const item_t /*arg*/) {
+        item_t x = getTopStack(vmstate);
+        vmstate.stack.pop();
+        item_t y = getTopStack(vmstate);
+        vmstate.stack.pop();
+
+        item_t z = x == y ? 1 : 0;
+        vmstate.stack.push(z);
+        return true;
+    });
+
+    register_instruction(state, "NEQ", [](vm_state& vmstate, const item_t /*arg*/) {
+        item_t x = getTopStack(vmstate);
+        vmstate.stack.pop();
+        item_t y = getTopStack(vmstate);
+        vmstate.stack.pop();
+
+        item_t z = x == y ? 0 : 1;
+        vmstate.stack.push(z);
+        return true;
+    });
+
+    register_instruction(state, "DUP", [](vm_state& vmstate, const item_t /*arg*/) {
+        item_t x = getTopStack(vmstate);
+        vmstate.stack.push(x);
+        return true;
+    });
+
+    register_instruction(state, "JMP", [](vm_state& vmstate, const item_t item /*arg*/) {
+
+         if(item < 0 || item >= vmstate.numberofOP){
+            throw vm_segfault("jump to an address smaller than 0");
+        }
+        
+        vmstate.pc = item;
+        return true;
     });
 
 
-    // register_instruction(state, "LOAD CONST")
+    register_instruction(state, "JMPZ", [](vm_state& vmstate, const item_t item /*arg*/) {
+        
+        item_t x = getTopStack(vmstate);
+        vmstate.stack.pop();
+
+        if(item < 0 || item >= vmstate.numberofOP){
+            throw vm_segfault("jump to an address smaller than 0");
+        }
+        if (!x){
+            vmstate.pc = item;
+        }
+        return true;
+    });
+
+    register_instruction(state, "WRITE", [](vm_state& vmstate, const item_t item /*arg*/) {
+        item_t x = getTopStack(vmstate);
+        vmstate.output_string += std::to_string(x);
+        return true;
+    });
+    
+    register_instruction(state, "WRITE_CHAR", [](vm_state& vmstate, const item_t item /*arg*/) {
+        item_t x = getTopStack(vmstate);
+        char asciiChar = static_cast<char>(x);
+        vmstate.output_string += asciiChar;
+        return true;
+    });
+
+
+
 
     return state;
+}
+
+item_t getTopStack(vm_state& vmstate){
+    if (vmstate.stack.empty()){
+        throw vm_stackfail("Stack is empty, no TOS can be return!");
+    }
+
+    item_t x = vmstate.stack.top();
+    return x;
+
 }
 
 
@@ -120,6 +222,8 @@ std::tuple<item_t, std::string> run(vm_state& vm, const code_t& code) {
         std::cout << "=== end of disassembly" << std::endl << std::endl;
     }
 
+    item_t TOS;
+    vm.numberofOP  = code.size();
     // execution loop for the machine
     while (true) {
 
@@ -134,10 +238,16 @@ std::tuple<item_t, std::string> run(vm_state& vm, const code_t& code) {
         vm.pc += 1;
 
         // TODO execute instruction and stop if the action returns false.
+        auto op_act = vm.instruction_actions[op_id];
+        bool return_value = op_act(vm,arg);
         
+        if (!return_value) {
+            TOS = vm.stack.top();
+            break;
+        }
     }
 
-    return {0, ""}; // TODO: return tuple(exit value, output text)
+    return {TOS, vm.output_string}; // TODO: return tuple(exit value, output text)
 }
 
 

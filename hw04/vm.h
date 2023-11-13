@@ -56,10 +56,16 @@ struct vm_state {
     size_t pc = 0;
 
     /**
+     * output string
+    */
+    std::string output_string = "";
+
+    /**
      * stores which id is given the next instruction that is registered.
      */
     size_t next_op_id = 0;
 
+    size_t numberofOP = 0;
     /**
      * the main execution state stack.
      */
@@ -106,6 +112,10 @@ struct vm_state {
  */
 vm_state create_vm(bool debug = false);
 
+/**
+ * get the top item of the stack, throw exception if stack is empty.
+*/
+item_t getTopStack(vm_state& vmstate);
 
 /**
  * convert the given instruction string to executable vm code.
