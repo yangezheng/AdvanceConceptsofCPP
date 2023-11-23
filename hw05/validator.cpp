@@ -45,7 +45,7 @@ State transition(state::Start, const Token &token) {
 // ------------------ more Struct --------------------- //
 
 struct TransitionFromSelectStmtVisitor {
-    State operator()(token::From) const { return state::FromClause{}; }
+    State operator()(token::From) const { return state::Invalid{}; }
     State operator()(token::Comma) const { return state::Invalid{}; }
     State operator()(token::Asterisks) const { return state::AllColumns{}; }
     State operator()(token::Semicolon) const { return state::Invalid{}; }
@@ -56,7 +56,7 @@ struct TransitionFromSelectStmtVisitor {
 
 struct TransitionFromAllColumnsVisitor {
     State operator()(token::From) const { return state::FromClause{}; }
-    State operator()(token::Comma) const { return state::MoreColumns{}; }
+    State operator()(token::Comma) const { return state::Invalid{}; }
     State operator()(token::Asterisks) const { return state::Invalid{}; }
     State operator()(token::Semicolon) const { return state::Invalid{}; }
     State operator()(token::Identifier) const { return state::Invalid{}; }
@@ -70,16 +70,15 @@ struct TransitionFromNamedColumnVisitor {
     State operator()(token::Semicolon) const { return state::Invalid{}; }
     State operator()(token::Identifier) const { return state::Invalid{}; }
     State operator()(token::Select) const { return state::Invalid{}; }
-
 };
 
 
 struct TransitionFromMoreColumnsVisitor {
     State operator()(token::Comma) const { return state::Invalid{}; }
-    State operator()(token::From) const { return state::FromClause{}; }
+    State operator()(token::From) const { return state::Invalid{}; }
     State operator()(token::Asterisks) const { return state::Invalid{}; }
     State operator()(token::Semicolon) const { return state::Invalid{}; }
-    State operator()(token::Identifier) const { return state::Invalid{}; }
+    State operator()(token::Identifier) const { return state::NamedColumn{}; }
     State operator()(token::Select) const { return state::Invalid{}; }
 
 };
