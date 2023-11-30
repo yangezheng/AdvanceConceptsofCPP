@@ -202,7 +202,7 @@ auto sum(const Vector &x) -> float {
 // Standalone function to find the product of coefficients in a Vector
 auto prod(const Vector &x) -> float {
     if (x.size() == 0) {
-        return 0.0f; // Product of an empty vector is 0
+        return 1.0f; // Product of an empty vector is 0
     }
     return std::accumulate(x.begin(), x.end(), 1.0f, std::multiplies<float>());
 }
