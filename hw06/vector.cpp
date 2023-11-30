@@ -16,6 +16,9 @@ namespace linalg {
  * Please Implement all functions from the header file here!#
  * Have fun! :-) And don't forget maybe you can use standard algorithms ;-)
  */
+
+Vector::Vector(std::size_t n) : data_(n) {}
+
 Vector::Vector(std::size_t n, float val) : data_(n, val) {}
 
 Vector::Vector(std::initializer_list<float> list) : data_(list) {}
