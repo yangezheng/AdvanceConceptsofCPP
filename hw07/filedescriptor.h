@@ -34,9 +34,31 @@ public:
     // TODO: Implement both copy and move constructors and assignment operators for the ownership model
     //       described in the class description.
 
+    // Copy constructor
+    FileDescriptor(const FileDescriptor& other);
+
+    // Move constructor
+    FileDescriptor(FileDescriptor&& other) noexcept;
+
+    //Copy assignment operator
+    FileDescriptor& operator=(const FileDescriptor& other);
+
+    //Move assignment operator
+    FileDescriptor& operator=(FileDescriptor&& other) noexcept;
+
+
     /// Return the underlying file descriptor, if not present return -1 (this is quite standard for
     /// linux systems)
     int unwrap() const;
+
+
+    // Additional Methods
+    
+    // Check if the file descriptor is valid
+    bool valid() const;
+
+    // Close the file descriptor
+    void close();
 
 private:
     std::optional<int> fd_ {};
