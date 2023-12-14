@@ -35,15 +35,6 @@ FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
     return *this;
 }
 
-// FileDescriptor::FileDescriptor(FileDescriptor&& other) noexcept : fd_(std::exchange(other.fd_, std::nullopt)) {}
-
-// FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
-//     if (this != &other) {
-//         close();
-//         fd_ = std::exchange(other.fd_, std::nullopt);
-//     }
-//     return *this;
-// }
 
 
 bool FileDescriptor::valid() const {

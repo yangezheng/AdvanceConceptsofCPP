@@ -23,6 +23,7 @@ class Connection {
 public:
     /// Take ownership of a file descriptor
     Connection(FileDescriptor&& fd);
+    ~Connection() = default;
 
     /// Send data from a string_view to the given file descriptor.
     ///
