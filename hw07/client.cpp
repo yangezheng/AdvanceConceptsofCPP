@@ -2,15 +2,23 @@
 
 namespace net
 {
-    
-void Client::connect(uint16_t port) {
+
+// Define the connect functions outside the class
+Connection Client::connect(uint16_t port) {
     // Connect to the specified port on localhost
-    socket_.connect(port);
+    FileDescriptor socket_fd = socket_.connect(port).fd_;
+
+    // Return a Connection object representing the connection
+    return Connection(FileDescriptor(socket_fd));
 }
 
-void Client::connect(std::string destination, uint16_t port) {
-    // Connect to the specified destination address and port
-    socket_.connect(destination, port);
+Connection Client::connect(std::string destination, uint16_t port) {
+    // Connect to the specified destination address and port and get the file descriptor
+    FileDescriptor socket_fd = socket_.connect(destination, port).fd_;
+
+    // Return a Connection object taking ownership of the file descriptor
+    return Connection(FileDescriptor(socket_fd));
 }
-    
+
+
 } // namespace net

@@ -11,6 +11,20 @@
 
 namespace net{
 
+bool is_listening(int fd) {
+    int optval;
+    socklen_t optlen = sizeof(optval);
+
+    // Use getsockopt to retrieve the SO_ACCEPTCONN option
+    if (getsockopt(fd, SOL_SOCKET, SO_ACCEPTCONN, &optval, &optlen) == -1) {
+        // Error handling: throw an exception or return false
+        throw std::runtime_error("getsockopt failed");
+    }
+
+    // Check the value of the option to determine if it's a listening socket
+    return optval != 0;
+}
+
 Socket::Socket() : fd_() {
     // Initialize the socket with the appropriate type and protocol
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);

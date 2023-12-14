@@ -9,7 +9,12 @@ Server::Server(uint16_t port) : socket_() {
 
 Connection Server::accept() const {
     // Accept a new connection and return a Connection object
-    return socket_.accept();
+    FileDescriptor client_fd = socket_.accept().fd_;
+    
+    // Return a Connection object taking ownership of the file descriptor
+    return Connection(FileDescriptor(client_fd));
 }
+
+
 
 }
