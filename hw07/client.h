@@ -14,6 +14,18 @@ namespace net {
  * - A client must have a function `connect` which connects to a given destination address and port
  */
 class Client {
+
+public:
+    Client() = default;
+    ~Client() = default;
+
+    void connect(uint16_t port);
+    void connect(std::string destination, uint16_t port);
+
+private:
+    Socket socket_;
+
 };
+
 
 } // namespace net
