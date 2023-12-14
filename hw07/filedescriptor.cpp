@@ -15,34 +15,7 @@ FileDescriptor::~FileDescriptor(){
     close();
 }
 
-FileDescriptor::FileDescriptor(const FileDescriptor& other) {
-    if (other.valid()) {
-        fd_ = dup(other.fd_.value());
-        if (fd_ == -1) {
-            perror("Error duplicating file descriptor");
-        }
-    } else {
-        fd_ = std::nullopt;
-    }
-}
-
 FileDescriptor::FileDescriptor(FileDescriptor&& other) noexcept : fd_(std::exchange(other.fd_, std::nullopt)) {}
-
-
-FileDescriptor& FileDescriptor::operator=(const FileDescriptor& other) {
-    if (this != &other) {
-        close();
-        if (other.valid()) {
-            fd_ = dup(other.fd_.value());
-            if (fd_ == -1) {
-                perror("Error duplicating file descriptor");
-            }
-        } else {
-            fd_ = std::nullopt;
-        }
-    }
-    return *this;
-}
 
 FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
     if (this != &other) {

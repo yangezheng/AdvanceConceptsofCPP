@@ -35,13 +35,13 @@ public:
     //       described in the class description.
 
     // Copy constructor
-    FileDescriptor(const FileDescriptor& other);
+    FileDescriptor(const FileDescriptor& other) = delete;
 
     // Move constructor
     FileDescriptor(FileDescriptor&& other) noexcept;
 
     //Copy assignment operator
-    FileDescriptor& operator=(const FileDescriptor& other);
+    FileDescriptor& operator=(const FileDescriptor& other) = delete;
 
     //Move assignment operator
     FileDescriptor& operator=(FileDescriptor&& other) noexcept;
