@@ -15,15 +15,35 @@ FileDescriptor::~FileDescriptor(){
     close();
 }
 
-FileDescriptor::FileDescriptor(FileDescriptor&& other) noexcept : fd_(std::exchange(other.fd_, std::nullopt)) {}
 
+// Implementation of the move constructor
+FileDescriptor::FileDescriptor(FileDescriptor&& other) noexcept {
+    // Move the file descriptor and invalidate the other FileDescriptor
+    fd_ = std::move(other.fd_);
+    other.fd_.reset();
+}
+
+// Implementation of the move assignment operator
 FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
     if (this != &other) {
-        close();
-        fd_ = std::exchange(other.fd_, std::nullopt);
+        // Release the current file descriptor
+        fd_.reset();
+        // Move the file descriptor and invalidate the other FileDescriptor
+        fd_ = std::move(other.fd_);
+        other.fd_.reset();
     }
     return *this;
 }
+
+// FileDescriptor::FileDescriptor(FileDescriptor&& other) noexcept : fd_(std::exchange(other.fd_, std::nullopt)) {}
+
+// FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
+//     if (this != &other) {
+//         close();
+//         fd_ = std::exchange(other.fd_, std::nullopt);
+//     }
+//     return *this;
+// }
 
 
 bool FileDescriptor::valid() const {
