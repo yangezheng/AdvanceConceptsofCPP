@@ -7,6 +7,8 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <optional>
+#include <netinet/tcp.h>
+
 
 
 namespace net{
@@ -25,16 +27,35 @@ bool is_listening(int fd) {
     return optval != 0;
 }
 
-Socket::Socket() : fd_() {
-    // Initialize the socket with the appropriate type and protocol
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd == -1) {
-        perror("Socket creation error");
-        throw std::runtime_error("Failed to create socket");
+// Socket::Socket() : fd_() {
+//     // Initialize the socket with the appropriate type and protocol
+//     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+//     if (socket_fd == -1) {
+//         perror("Socket creation error");
+//         throw std::runtime_error("Failed to create socket");
+//     }
+
+//     fd_ = FileDescriptor(socket_fd);
+// }
+
+
+Socket::Socket()
+: fd_(socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) {
+    if (fd_.unwrap() < 0) {
+        throw std::runtime_error("error creating socket");
     }
 
-    fd_ = FileDescriptor(socket_fd);
+    const int enable = 1;
+    if (setsockopt(fd_.unwrap(), SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+        throw std::runtime_error("error setting SO_REUSEADDR for socket");
+    }
+
+    int flag = 1;
+    if (setsockopt(fd_.unwrap(), IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int)) < 0) {
+        std::cerr << "Could not set TCP_NODELAY for socket\n";
+    }
 }
+
 
 void Socket::listen(uint16_t port) const {
     if (!fd_.valid()) {
