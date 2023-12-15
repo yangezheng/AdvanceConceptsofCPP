@@ -58,7 +58,7 @@ public:
     bool valid() const;
 
     // Close the file descriptor
-    void close();
+    // void close();
 
 private:
     std::optional<int> fd_ {};
