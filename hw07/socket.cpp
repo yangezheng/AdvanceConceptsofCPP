@@ -113,55 +113,57 @@ Connection Socket::accept() const {
 
 // connect
 
-// Connection Socket::connect(std::string destination, uint16_t port) {
-//     if (!fd_.valid()) {
-//         throw std::runtime_error("Socket is not valid");
-//     }
-
-//     struct sockaddr_in addr{};
-//     addr.sin_family = AF_INET;
-//     addr.sin_port = htons(port);
-
-//     if (inet_pton(AF_INET, destination.c_str(), &addr.sin_addr) <= 0) {
-//         struct hostent* host_entry = gethostbyname(destination.c_str());
-//         if (host_entry == nullptr) {
-//             throw std::runtime_error("Failed to resolve host");
-//         }
-//         std::memcpy(&addr.sin_addr, host_entry->h_addr, host_entry->h_length);
-//     }
-
-//     // Connect to the specified address and port
-//     if (::connect(fd_.unwrap(), reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1) {
-//         perror("Connect error");
-//         throw std::runtime_error("Failed to connect to server");
-//     }
-
-//     return Connection(FileDescriptor(fd_.unwrap()));
-// }
-
-
 Connection Socket::connect(std::string destination, uint16_t port) {
-    struct sockaddr_in server { }; server.sin_family = AF_INET; server.sin_port = htons(port);
+    if (!fd_.valid()) {
+        throw std::runtime_error("Socket is not valid");
+    }
 
-    // parse or resolve ip addr
-    if (uint32_t addr = inet_addr(destination.c_str()); addr != INADDR_NONE) {
-        std::memcpy(&server.sin_addr, &addr, sizeof(addr));
-    } else {
-        // TODO: use getaddrinfo and support IPv6 :)
-        hostent* host_info = gethostbyname(destination.c_str());
-        if (host_info == nullptr) {
-            throw std::runtime_error("destination host could not be resolved");
+    struct sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+
+    if (inet_pton(AF_INET, destination.c_str(), &addr.sin_addr) <= 0) {
+        struct hostent* host_entry = gethostbyname(destination.c_str());
+        if (host_entry == nullptr) {
+            throw std::runtime_error("Failed to resolve host");
         }
-        std::memcpy(&server.sin_addr, host_info->h_addr, static_cast<size_t>(host_info->h_length));
+        std::memcpy(&addr.sin_addr, host_entry->h_addr, host_entry->h_length);
     }
 
-    if (::connect(fd_.unwrap(), reinterpret_cast<sockaddr*>(&server), sizeof(server)) < 0) {
-        throw std::runtime_error("failed to connect to server (is it running?)");
+    // Connect to the specified address and port
+    if (::connect(fd_.unwrap(), reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1) {
+        perror("Connect error");
+        throw std::runtime_error("Failed to connect to server");
     }
 
-    // transfer the fd into the connection
-    return Connection { std::move(fd_) };
-    }
+
+    return Connection(std::move(fd_));
+    // return Connection(FileDescriptor(fd_.unwrap()));
+}
+
+
+// Connection Socket::connect(std::string destination, uint16_t port) {
+//     struct sockaddr_in server { }; server.sin_family = AF_INET; server.sin_port = htons(port);
+
+//     // parse or resolve ip addr
+//     if (uint32_t addr = inet_addr(destination.c_str()); addr != INADDR_NONE) {
+//         std::memcpy(&server.sin_addr, &addr, sizeof(addr));
+//     } else {
+//         // TODO: use getaddrinfo and support IPv6 :)
+//         hostent* host_info = gethostbyname(destination.c_str());
+//         if (host_info == nullptr) {
+//             throw std::runtime_error("destination host could not be resolved");
+//         }
+//         std::memcpy(&server.sin_addr, host_info->h_addr, static_cast<size_t>(host_info->h_length));
+//     }
+
+//     if (::connect(fd_.unwrap(), reinterpret_cast<sockaddr*>(&server), sizeof(server)) < 0) {
+//         throw std::runtime_error("failed to connect to server (is it running?)");
+//     }
+
+//     // transfer the fd into the connection
+//     return Connection { std::move(fd_) };
+//     }
 
 
 Connection Socket::connect(uint16_t port) {
